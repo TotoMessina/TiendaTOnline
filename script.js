@@ -221,18 +221,31 @@ function renderProducts(products) {
         return;
     }
 
-    const productsHTML = products.map(product => `
+    const productsHTML = products.map(product => {
+        // Generar iniciales (Ej: "Smart Watch" -> "SW")
+        const initials = product.nombre
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase();
+
+        return `
         <article class="product-card">
-            <div class="image-container">
-                <img src="${product.imagen_url || 'https://placehold.co/600x600/f5f5f7/333333?text=No+Image'}" alt="${product.nombre}">
+            <div class="product-header">
+                <div class="product-initials">${initials}</div>
             </div>
-            <div class="product-info">
+            <div class="product-content">
                 <h2 class="product-title">${product.nombre}</h2>
+                <div class="product-description">
+                    ${product.descripcion || 'Sin descripción disponible.'}
+                </div>
                 <p class="product-price">$${formatPrice(product.precio)}</p>
-                <button class="btn-primary" onclick="addToCart('${product.id}')">Agregar al Carrito</button>
             </div>
+            <button class="btn-primary" onclick="addToCart('${product.id}')">Agregar al Carrito</button>
         </article>
-    `).join('');
+        `;
+    }).join('');
 
     productGrid.innerHTML = productsHTML;
 }

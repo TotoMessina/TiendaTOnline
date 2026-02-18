@@ -435,44 +435,62 @@ img {
 }
 
 /* Product Card */
+/* Product Card (Text-Only Redesign) */
 .product-card {
     background-color: var(--bg-card);
     border-radius: 18px;
     overflow: hidden;
-    padding: var(--spacing-lg);
+    padding: 24px;
     transition: transform var(--transition-speed), box-shadow var(--transition-speed);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    justify-content: space-between;
+    /* Push button to bottom */
+    align-items: flex-start;
+    /* Left align text */
+    text-align: left;
     cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    height: 100%;
+    min-height: 280px;
+    /* Ensure uniform height */
 }
 
 .product-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
-.image-container {
+.product-header {
     width: 100%;
-    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.product-initials {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--spacing-md);
-    border-radius: 12px;
-    overflow: hidden;
-    background-color: #f9f9f9;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
 }
 
-.image-container img {
-    transition: transform 0.5s ease;
-    mix-blend-mode: multiply;
-    /* Helps integrate placeholders nicely */
-}
+/* Dynamic background colors for initials could be added via JS or random classes */
 
-.product-card:hover .image-container img {
-    transform: scale(1.05);
+.product-content {
+    flex: 1;
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 .product-info {
@@ -480,10 +498,24 @@ img {
 }
 
 .product-title {
-    font-size: 1.25rem;
+    font-size: 1.4rem;
+    /* Larger title */
     font-weight: 600;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 8px;
     color: var(--text-main);
+    line-height: 1.2;
+}
+
+.product-description {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* Limit to 3 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .product-price {
@@ -504,13 +536,31 @@ img {
     border: none;
     cursor: pointer;
     transition: background-color var(--transition-speed), transform 0.2s;
-    opacity: 0;
-    transform: translateY(10px);
+    /* opacity: 0; Removed for text-only design logic handled in next block, but safely replacing here to avoid conflict */
 }
 
-.product-card:hover .btn-primary {
-    opacity: 1;
-    transform: translateY(0);
+.btn-primary {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    /* Slightly less rounded */
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+    width: 100%;
+    /* Full width button */
+    text-align: center;
+    margin-top: auto;
+    /* Push to bottom */
+}
+
+.btn-primary:hover {
+    background-color: #0077ED;
+    /* Slightly lighter blue */
 }
 
 .btn-primary:active {
