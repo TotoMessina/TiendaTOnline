@@ -142,6 +142,71 @@ img {
     width: 100%;
 }
 
+/* Navigation Groups */
+.nav-group-container {
+    display: block;
+    width: 100%;
+}
+
+.nav-group-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px;
+    margin-top: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    transition: background-color 0.2s;
+    user-select: none;
+    /* Prevent text selection on double click */
+}
+
+.nav-group-title:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-group-title::after {
+    content: '+';
+    font-size: 1.2rem;
+    font-weight: 400;
+    transition: transform 0.3s;
+}
+
+.nav-group-title.active::after {
+    transform: rotate(45deg);
+}
+
+.nav-group-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-group-content.active {
+    max-height: 2000px;
+    /* Large enough for many items */
+    transition: max-height 0.5s ease-in;
+    margin-top: 8px;
+}
+
+/* Nested Links */
+.nav-group-content .nav-link {
+    padding-left: 24px;
+    font-size: 1rem;
+    border-left: 2px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0 12px 12px 0;
+}
+
 .nav-link {
     display: block;
     font-size: 1.1rem;

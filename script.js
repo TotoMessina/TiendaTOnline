@@ -136,18 +136,51 @@ async function fetchCategories() {
     renderCategories(data);
 }
 
-// Renderizar Menú de Categorías
+// Renderizar Menú de Categorías (Agrupado)
 function renderCategories(categories) {
-    // Limpiar menú (manteniendo "Todo" si se desea, aquí lo reconstruimos completo)
-    const allOption = `<li><a href="#" class="nav-link active" data-id="all">Todo</a></li>`;
+    // 1. "Todo" siempre va primero
+    let menuHTML = `<li><a href="#" class="nav-link active" data-id="all">Todo</a></li>`;
 
-    const categoryOptions = categories.map(cat => `
-        <li>
-            <a href="#" class="nav-link" data-id="${cat.id}">${cat.nombre}</a>
-        </li>
-    `).join('');
+    // 2. Agrupar categorías
+    // Objeto: { "Bebidas": [cat1, cat2], "Almacén": [cat3], "Sin Grupo": [cat4] }
+    const groups = {};
 
-    navList.innerHTML = allOption + categoryOptions;
+    // Primero ordenar alfabéticamente por nombre de categoría para que queden prolijas dentro del grupo
+    const sortedCats = [...categories].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    sortedCats.forEach(cat => {
+        const groupName = cat.grupo || 'Otros'; // Si es null, va a "Otros"
+        if (!groups[groupName]) {
+            groups[groupName] = [];
+        }
+        groups[groupName].push(cat);
+    });
+
+    // 3. Generar HTML por grupos
+    // Ordenamos las llaves de grupos (opcional: podrías querer un orden específico fijo)
+    const sortedGroupNames = Object.keys(groups).sort();
+
+    // Move "Otros" to the end if present
+    if (sortedGroupNames.includes('Otros')) {
+        sortedGroupNames.push(sortedGroupNames.splice(sortedGroupNames.indexOf('Otros'), 1)[0]);
+    }
+
+    sortedGroupNames.forEach(groupName => {
+        // Solo mostrar título si hay más de 1 grupo o si tiene nombre específico
+        if (sortedGroupNames.length > 1) {
+            menuHTML += `<li class="nav-group-title">${groupName}</li>`;
+        }
+
+        groups[groupName].forEach(cat => {
+            menuHTML += `
+                <li>
+                    <a href="#" class="nav-link" data-id="${cat.id}">${cat.nombre}</a>
+                </li>
+            `;
+        });
+    });
+
+    navList.innerHTML = menuHTML;
 
     // Agregar Listeners
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -172,25 +205,51 @@ function handleCategoryClick(clickedElement) {
     filterAndRenderProducts();
 }
 
-// Obtener Productos (con Join simple si es necesario, o traer todo y filtrar en cliente para catálogos pequeños)
+// Obtener Todos los Productos (Paginado para superar límite de 1000)
 async function fetchProducts() {
-    // Asumimos que la tabla productos tiene foreign key 'categoria_id'
-    const { data, error } = await supabaseClient
-        .from('productos')
-        .select(`
-            *,
-            categorias (
-                nombre
-            )
-        `);
+    let allData = [];
+    let page = 0;
+    const pageSize = 1000;
+    let keepFetching = true;
 
-    if (error) {
-        console.error('Error obteniendo productos:', error);
-        throw error;
+    console.log('Iniciando carga masiva de productos...');
+
+    while (keepFetching) {
+        const from = page * pageSize;
+        const to = (page + 1) * pageSize - 1;
+
+        const { data, error } = await supabaseClient
+            .from('productos')
+            .select(`
+                *,
+                categorias (
+                    nombre
+                )
+            `)
+            .range(from, to);
+
+        if (error) {
+            console.error('Error obteniendo productos (página ' + page + '):', error);
+            throw error; // O manejar break
+        }
+
+        if (data && data.length > 0) {
+            allData = allData.concat(data);
+            console.log(`Página ${page}: cargados ${data.length} productos. Total parcial: ${allData.length}`);
+
+            // Si trajimos menos del tamaño de página, es la última
+            if (data.length < pageSize) {
+                keepFetching = false;
+            } else {
+                page++;
+            }
+        } else {
+            keepFetching = false;
+        }
     }
 
-    allProducts = data;
-    console.log(`Cargados ${allProducts.length} productos.`);
+    allProducts = allData;
+    console.log(`Carga finalizada. Total productos: ${allProducts.length}`);
     filterAndRenderProducts();
 }
 
@@ -198,9 +257,19 @@ async function fetchProducts() {
 function filterAndRenderProducts() {
     let filteredProducts = allProducts;
 
+    // Debugging filtering
+    console.log(`Filtrando para categoría: ${currentCategory}`);
+    console.log(`Total productos cargados: ${allProducts.length}`);
+
     if (currentCategory !== 'all') {
-        filteredProducts = allProducts.filter(product => product.categoria_id == currentCategory);
+        filteredProducts = allProducts.filter(product => {
+            // Log matching for debugging specific categories
+            // console.log(`Procesando producto: ${product.nombre}, ID Cat: ${product.categoria_id}, Buscando: ${currentCategory}`);
+            return product.categoria_id == currentCategory;
+        });
     }
+
+    console.log(`Productos encontrados para esta categoría: ${filteredProducts.length}`);
 
     // Apply product search filter if active
     const productSearch = document.getElementById('product-search');
